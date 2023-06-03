@@ -105,7 +105,7 @@ def armourShop(info,inventory,money,moneyL):
                 s = line[8:]
                 stats = s.split(",")
                 armour.append(stats)
-                print(str(w)+"."+" Damage reduction: "+str(round(100-(100/int(stats[0]))))+"%, "+"Price: $"+stats[1])      
+                print(str(w)+"."+" Damage reduction: "+str(round(100-(100/int(stats[0])),2))+"%, "+"Price: $"+stats[1])      
                 w+=1              
         print("------------------------------------")
         choice=(input("Which armour would you like to buy?[1-"+str(len(armour))+"]\nType 'quit' to go back\n"))
@@ -126,16 +126,17 @@ def armourShop(info,inventory,money,moneyL):
         else:
             print("TRY AGAIN")
 
-def Shop(moneyL,healthL,shop_bt):
-    shop_bt.configure(state=tkinter.DISABLED)
+# Function for shop
+def Shop(moneyL,healthL,Levels):
+    for button in Levels.winfo_children():
+        button.configure(state='disable')
+    #shop_bt.configure(state='disable')
     file = open("Shop_Edit.txt")
     print(file.readline().replace('\n', '')+", "+name)
     data = file.readlines()
     info=[]
     for line in data:
         info.append(line.strip())
-    print(info)
-
 
     pin = 0
     while pin != "5":
@@ -150,7 +151,8 @@ def Shop(moneyL,healthL,shop_bt):
             armourShop(info,inventory,money,moneyL)
 
     print("YOU LEFT THE SHOP")
-    shop_bt.configure(state=tkinter.NORMAL)
+    for button in Levels.winfo_children():  
+        button.configure(state='normal')
     file.close()
     
 
@@ -188,7 +190,7 @@ def game(name,money,health,points):
     r3_bt.grid(row = 0, column = 2)
     r4_bt=tkinter.Button(Levels, text="Room 4")
     r4_bt.grid(row = 0, column = 3)
-    shop_bt=tkinter.Button(Levels, text="Shop", command = lambda: Shop(moneyL,healthL,shop_bt))
+    shop_bt=tkinter.Button(Levels, text="Shop", command = lambda: Shop(moneyL,healthL,Levels))
     shop_bt.grid(row = 0, column = 4)
     
     window.mainloop()
