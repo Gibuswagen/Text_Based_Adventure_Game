@@ -12,14 +12,14 @@ def start():
     global points
     points = 0
     global inventory
-    inventory = {'Weapons':[],'Armour':0}
+    inventory = {'Weapons':[],'Keys':[],'Armour':0}
     if len(name) > 0:
         game(name,money,health,points)
 
 
 #Function for later info use    
 def readStages():
-    for n in range(1,4):
+    for n in range(1,5):
         with open("Room{}.txt".format(n),"r") as origin, open("Room{}_Edit.txt".format(n),"w") as copy:
             for line in origin:
                 copy.write(line)
@@ -45,7 +45,7 @@ def weaponShop(info,inventory,money,moneyL):
         choice=(input("Which weapon would you like to buy?[1-"+str(len(weapons))+"]\nType 'quit' to go back\n"))
         if choice == "quit":
             break
-        if int(choice) in range(1,len(weapons)):
+        if int(choice) in range(1,len(weapons)+1):
             purchase = [weapons[int(choice)-1][0],int(weapons[int(choice)-1][1]),int(weapons[int(choice)-1][2])]
             if purchase in inventory['Weapons']:
                 print("YOU ALREADY HAVE THIS ITEM")
@@ -61,6 +61,41 @@ def weaponShop(info,inventory,money,moneyL):
             print("TRY AGAIN")
 
     
+def keyShop(info,inventory,money,moneyL):
+    choice = 0
+    while choice != "quit":
+        keys = []
+        print("------------------------------------")
+        k = 1
+        for line in info:
+            if "key:" in line:
+                s = line[4:-2]
+                stats = s.split(",")
+                keys.append(stats)
+                print(str(k)+".","Type: "+stats[0]+", "+"Price: $"+stats[1])
+                k+=1
+        print("------------------------------------")
+        choice=(input("Which key would you like to buy?[1-"+str(len(keys))+"]\nType 'quit' to go back\n"))
+        if choice == "quit":
+            break
+        if int(choice) == 1:
+            purchase = [keys[int(choice)-1][0],int(keys[int(choice)-1][1])]
+            if purchase in inventory['Keys']:
+                print("YOU ALREADY HAVE THIS ITEM")
+            elif money >= purchase[1]:
+                money -= purchase[1]
+                inventory['Keys'] += [purchase]
+                print("ITEM PURCHASED SUCCESSFULLY")
+                moneyL.configure(text = "Money: $"+str(money))
+                print(inventory)
+                
+            else:
+                print("NOT ENOUGH MONEY")
+        else:
+            print("TRY AGAIN")
+
+
+
 
 
 
@@ -73,9 +108,11 @@ def Shop(moneyL,healthL,shop_bt):
 
     pin = 0
     while pin != "5":
-        pin = input("What do you want to buy? [1-5]\n1 >> Weapons\n2 >> Keys\n3 >> Healing Pads\n4 >> Armour\n5 >> Leave shop\n")
+        pin = input("How can I help? [1-5]\n1 >> Weapons\n2 >> Keys\n3 >> Healing Pads\n4 >> Armour\n5 >> Leave shop\n")
         if pin == "1":
             weaponShop(info,inventory,money,moneyL)
+        elif pin == "2":
+            keyShop(info,inventory,money,moneyL)
     print("YOU LEFT THE SHOP")
     shop_bt.configure(state=tkinter.NORMAL)
     file.close()
