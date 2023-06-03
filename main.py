@@ -42,9 +42,11 @@ def weaponShop(info,inventory,money,moneyL):
                 print(str(w)+".",stats[0].capitalize()+", "+"Damage: "+stats[1]+", "+"Price: $"+stats[2])      
                 w+=1              
         print("------------------------------------")
-        choice=int(input("Which weapon would you like to buy?[1-"+str(len(weapons))+"]\nType 'quit' to go back\n"))
-        if choice in range(1,len(weapons)):
-            purchase = [weapons[choice-1][0],int(weapons[choice-1][1]),int(weapons[choice-1][2])]
+        choice=(input("Which weapon would you like to buy?[1-"+str(len(weapons))+"]\nType 'quit' to go back\n"))
+        if choice == "quit":
+            break
+        if int(choice) in range(1,len(weapons)):
+            purchase = [weapons[int(choice)-1][0],int(weapons[int(choice)-1][1]),int(weapons[int(choice)-1][2])]
             if purchase in inventory['Weapons']:
                 print("YOU ALREADY HAVE THIS ITEM")
             elif money >= purchase[2]:
@@ -62,7 +64,8 @@ def weaponShop(info,inventory,money,moneyL):
 
 
 
-def Shop(moneyL,healthL):
+def Shop(moneyL,healthL,shop_bt):
+    shop_bt.configure(state=tkinter.DISABLED)
     file = open("Shop_Edit.txt")
     print(file.readline().replace('\n', '')+", "+name)
 
@@ -73,7 +76,8 @@ def Shop(moneyL,healthL):
         pin = input("What do you want to buy? [1-5]\n1 >> Weapons\n2 >> Keys\n3 >> Healing Pads\n4 >> Armour\n5 >> Leave shop\n")
         if pin == "1":
             weaponShop(info,inventory,money,moneyL)
-
+    print("YOU LEFT THE SHOP")
+    shop_bt.configure(state=tkinter.NORMAL)
     file.close()
     
 
@@ -105,14 +109,14 @@ def game(name,money,health,points):
     Levels.pack(anchor="n", padx=10)
     r1_bt=tkinter.Button(Levels, text="Room 1")
     r1_bt.grid(row = 0, column = 0)
-    r1_bt=tkinter.Button(Levels, text="Room 2")
-    r1_bt.grid(row = 0, column = 1)
-    r1_bt=tkinter.Button(Levels, text="Room 3")
-    r1_bt.grid(row = 0, column = 2)
-    r1_bt=tkinter.Button(Levels, text="Room 4")
-    r1_bt.grid(row = 0, column = 3)
-    r1_bt=tkinter.Button(Levels, text="Shop", command = lambda: Shop(moneyL))
-    r1_bt.grid(row = 0, column = 4)
+    r2_bt=tkinter.Button(Levels, text="Room 2")
+    r2_bt.grid(row = 0, column = 1)
+    r3_bt=tkinter.Button(Levels, text="Room 3")
+    r3_bt.grid(row = 0, column = 2)
+    r4_bt=tkinter.Button(Levels, text="Room 4")
+    r4_bt.grid(row = 0, column = 3)
+    shop_bt=tkinter.Button(Levels, text="Shop", command = lambda: Shop(moneyL,healthL,shop_bt))
+    shop_bt.grid(row = 0, column = 4)
     
     window.mainloop()
 start()
