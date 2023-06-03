@@ -1,21 +1,18 @@
 import tkinter
 import random
-import os
-
-#delete edit files
-def deleteTxt():
-    for n in range(1,4):
-        os.remove("Room{}_Edit.txt".format(n))
-    os.remove("Shop_Edit.txt")
-
 
 #Function that asks a user for a name input and starts the game
 def start():
-    deleteTxt()
+    global name
     name = input("Enter your name >> ")
+    global money
     money = random.randint(50,310)
+    global health
     health = 100
+    global points
     points = 0
+    global inventory
+    inventory = {'Weapons':[],'Armour':0}
     if len(name) > 0:
         game(name,money,health,points)
 
@@ -29,6 +26,56 @@ def readStages():
     with open("Shop.txt".format(n),"r") as origin, open ("Shop_Edit.txt".format(n),"w") as copy:
         for line in origin:
             copy.write(line)
+
+#Function that shows available weapons and allows to buy them
+def weaponShop(info,inventory,money,moneyL):
+    choice = 0
+    while choice != "quit":    
+        weapons=[]
+        print("------------------------------------")
+        w = 1
+        for line in info:
+            if "weapon{}".format(w) in line:
+                s = line[8:-2]
+                stats = s.split(",")
+                weapons.append(stats)
+                print(str(w)+".",stats[0].capitalize()+", "+"Damage: "+stats[1]+", "+"Price: $"+stats[2])      
+                w+=1              
+        print("------------------------------------")
+        choice=int(input("Which weapon would you like to buy?[1-"+str(len(weapons))+"]\nType 'quit' to go back\n"))
+        if choice in range(1,len(weapons)):
+            purchase = [weapons[choice-1][0],int(weapons[choice-1][1]),int(weapons[choice-1][2])]
+            if purchase in inventory['Weapons']:
+                print("YOU ALREADY HAVE THIS ITEM")
+            elif money >= purchase[2]:
+                money -= purchase[2]
+                inventory['Weapons'] += [purchase]
+                print("ITEM PURCHASED SUCCESSFULLY")
+                moneyL.configure(text = "Money: $"+str(money))
+                
+            else:
+                print("NOT ENOUGH MONEY")
+        else:
+            print("TRY AGAIN")
+
+    
+
+
+
+def Shop(moneyL,healthL):
+    file = open("Shop_Edit.txt")
+    print(file.readline().replace('\n', '')+", "+name)
+
+    info = file.readlines()
+
+    pin = 0
+    while pin != "5":
+        pin = input("What do you want to buy? [1-5]\n1 >> Weapons\n2 >> Keys\n3 >> Healing Pads\n4 >> Armour\n5 >> Leave shop\n")
+        if pin == "1":
+            weaponShop(info,inventory,money,moneyL)
+
+    file.close()
+    
 
 
 def game(name,money,health,points):
@@ -64,7 +111,7 @@ def game(name,money,health,points):
     r1_bt.grid(row = 0, column = 2)
     r1_bt=tkinter.Button(Levels, text="Room 4")
     r1_bt.grid(row = 0, column = 3)
-    r1_bt=tkinter.Button(Levels, text="Shop")
+    r1_bt=tkinter.Button(Levels, text="Shop", command = lambda: Shop(moneyL))
     r1_bt.grid(row = 0, column = 4)
     
     window.mainloop()
