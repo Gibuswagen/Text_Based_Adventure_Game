@@ -165,11 +165,11 @@ def healingPads(player,healthL,moneyL):
             if "pad" in line:
                 s = line[4:]
                 stats = s.split(",")    
-        print("1.","Quantity: "+str(stats[0])+", "+"Health: +"+str(stats[1])+", "+"Price: "+str(stats[2]))
         if stats[0] == "0":
             print("Sorry, we are out of healing pads!")
             print("------------------------------------")
             return
+        print("1.","Quantity: "+str(stats[0])+", "+"Health: +"+str(stats[1])+", "+"Price: "+str(stats[2]))
         print("------------------------------------")
         choice=input("Type 1 to buy a healing pad\nType 'quit' to go back\n")
         if choice == "quit":
