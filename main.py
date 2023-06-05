@@ -10,12 +10,31 @@ class Player:
         self.health = health
         self.points = points
         self.inventory = inventory
+    def showInventory(self):
+        counterW=0
+        counterK=0
+        counterA=0
+        print("------------------------------------")
+        print("Weapons: ")
+        for weapon in self.inventory['Weapons']:
+            counterW += 1
+            print(str(counterW)+".",weapon[0].capitalize()+", "+"Damage: "+str(weapon[1])+", "+"Price: $"+str(weapon[2]))
+        print("Keys: ")
+        for key in self.inventory['Keys']:
+            counterK += 1
+            print(str(counterK)+".","Type: "+str(key[0])+", "+"Price: $"+str(key[1]))
+        print("Armour: ")
+        for armour in self.inventory['Armour']:
+            counterA +=1
+            print(str(counterA)+"."+" Damage reduction: "+str(round(100-(100/int(armour[0])),2))+"%, "+"Price: $"+str(armour[1]))
+        print("------------------------------------")
+
 
 
 #Function that asks a user for a name input and starts the game
 def start():
     name = input("Enter your name >> ")
-    player = Player(name,100000,100,0,{'Weapons':[],'Keys':[],'Armour':[]})
+    player = Player(name,10000,20,0,{'Weapons':[],'Keys':[],'Armour':[]})
     if len(name) > 0:
         game(player)
 
@@ -31,7 +50,8 @@ def readStages():
             copy.write(line)
 
 #Function that shows available weapons and allows to buy them
-def weaponShop(info,player,moneyL):
+def weaponShop(player,moneyL):
+    info = readShop("Shop_Edit.txt")
     choice = 0
     while choice != "quit":    
         weapons=[]
@@ -66,7 +86,8 @@ def weaponShop(info,player,moneyL):
             print("TRY AGAIN")
 
 #Function that shows available keys and allows to buy them    
-def keyShop(info,player,moneyL):
+def keyShop(player,moneyL):
+    info = readShop("Shop_Edit.txt")
     choice = 0
     while choice != "quit":
         keys = []
@@ -82,7 +103,6 @@ def keyShop(info,player,moneyL):
         print("------------------------------------")
         choice=(input("Which key would you like to buy?[1-"+str(len(keys))+"]\nType 'quit' to go back\n"))
         if choice == "quit":
-            moneyL.configure(text = "Money: $"+str(player.money))
             break
         if int(choice) in range(1,len(keys)+1):
             purchase = [keys[int(choice)-1][0],int(keys[int(choice)-1][1])]
@@ -99,7 +119,8 @@ def keyShop(info,player,moneyL):
             print("TRY AGAIN")
 
 #Function that shows available armour and allows to buy them  
-def armourShop(info,player,moneyL):
+def armourShop(player,moneyL):
+    info = readShop("Shop_Edit.txt")
     choice = 0
     while choice != "quit":    
         armour=[]
@@ -117,7 +138,6 @@ def armourShop(info,player,moneyL):
         print("------------------------------------")
         choice=input("Which armour would you like to buy?[1-"+str(len(armour))+"]\nType 'quit' to go back\n")
         if choice == "quit":
-            moneyL.configure(text = "Money: $"+str(player.money))
             break
         if int(choice) in range(1,len(armour)+1):
             purchase = [armour[int(choice)-1][0],int(armour[int(choice)-1][1])]
@@ -136,8 +156,53 @@ def armourShop(info,player,moneyL):
 
 
 #Function to buy healing pads
-def healingPads(info,player,moneyL):
-    pass
+def healingPads(player,healthL,moneyL):
+    choice = 0
+    while choice != "quit":   
+        info = readShop("Shop_Edit.txt") 
+        print("------------------------------------")
+        for line in info:
+            if "pad" in line:
+                s = line[4:]
+                stats = s.split(",")    
+        print("1.","Quantity: "+str(stats[0])+", "+"Health: +"+str(stats[1])+", "+"Price: "+str(stats[2]))
+        if stats[0] == "0":
+            print("Sorry, we are out of healing pads!")
+            print("------------------------------------")
+            return
+        print("------------------------------------")
+        choice=input("Type 1 to buy a healing pad\nType 'quit' to go back\n")
+        if choice == "quit":
+            break
+        if choice =="1":
+            quantity = int(stats[0])
+            cost = int(stats[2])
+            hp = int(stats[1])
+            if player.health == 100:
+                print("You already fully healed")
+                return
+            elif player.health < 100:
+                if player.money >= cost:
+                    player.money -= cost
+                    if player.health + hp > 100:
+                        player.health = 100
+                    else:
+                        player.health += hp
+                    moneyL.configure(text = "Money: $"+str(player.money))
+                    healthL.configure(text = "Health: "+str(player.health))
+                    file = open("Shop_Edit.txt","w")
+                    for line in info:
+                        line += "\n"
+                        if "pad:" in line:
+                            line = line.replace(":"+str(quantity)+",",":"+str(quantity-1)+",")
+                        file.write(line)
+                        line=line.replace('\n','')
+                    file.close()
+                else:
+                    print("NOT ENOUGH MONEY")
+        else:
+            print("TRY AGAIN")
+    
 
 #Function to sell your items in the inventory
 def sellItems(player,moneyL):
@@ -198,37 +263,38 @@ def sellItems(player,moneyL):
         
 
     
-
+def readShop(filename):
+    file = open(filename)
+    data = file.readlines()
+    info=[]
+    for line in data:
+        info.append(line.strip())
+    return info
 
 # Function for shop
 def Shop(moneyL,healthL,Levels,player):
     for button in Levels.winfo_children():
         button.configure(state='disable')
-    file = open("Shop_Edit.txt")
-    print(file.readline().replace('\n', '')+", "+player.name)
-    data = file.readlines()
-    info=[]
-    for line in data:
-        info.append(line.strip())
+    info = readShop("Shop_Edit.txt")
+    print(info[0]+", "+player.name)
 
     pin = 0
     while pin != "6":
         pin = input("How can I help? [1-5]\n1 >> Weapons\n2 >> Keys\n3 >> Healing Pads\n4 >> Armour\n5 >> Sell items\n6 >> Leave shop\n")
         if pin == "1":
-            weaponShop(info,player,moneyL)
+            weaponShop(player,moneyL)
         elif pin == "2":
-            keyShop(info,player,moneyL)
+            keyShop(player,moneyL)
         elif pin == "3":
-            pass
+            healingPads(player,healthL,moneyL)
         elif pin =="4":
-            armourShop(info,player,moneyL)
+            armourShop(player,moneyL)
         elif pin =="5":
             sellItems(player,moneyL)
 
     print("YOU LEFT THE SHOP")
     for button in Levels.winfo_children():  
         button.configure(state='normal')
-    file.close()
     
 
 
@@ -253,7 +319,8 @@ def game(player):
     healthL.grid(row = 0, column= 2)
     pointsL = tkinter.Label(Player_stat, text = ("Points:",player.points), font=("TimesRoman, 10"))
     pointsL.grid(row = 0, column= 3)
-    
+    inv_bt = tkinter.Button(window, text="Inventory", command = player.showInventory)
+    inv_bt.pack(anchor="n")    
     #Room Buttons
     Levels = tkinter.Frame(window)
     Levels.pack(anchor="n", padx=10)

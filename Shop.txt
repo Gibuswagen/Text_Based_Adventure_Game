@@ -10,8 +10,8 @@ weapon5:sniper,40,250
 # Key description: code, price
 key:0,300
 
-# HealingPad description: health +50, price 100
-5 
+# HealingPad description: quantity, health , price
+pad:5,50,100
 
 # Armour description: durability, price
 armour1:2,200 
