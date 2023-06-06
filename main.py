@@ -1,6 +1,6 @@
 import tkinter
 import random
-
+import sys
 
 # class Player storing all the player stats
 class Player:
@@ -34,26 +34,28 @@ class Player:
 #Function that asks a user for a name input and starts the game
 def start():
     name = input("Enter your name >> ")
-    player = Player(name,10000,20,0,{'Weapons':[],'Keys':[],'Armour':[]})
+    player = Player(name,random.randint(50,310),100,0,{'Weapons':[],'Keys':[],'Armour':[]})
     if len(name) > 0:
         game(player)
+    # player = Player('Gibuswagen',10000,100,0,{'Weapons':[['knife',10,50]],'Keys':[],'Armour':[]})
+    # game(player)
 
 
 #Function for later info use    
 def readStages():
     for n in range(1,5):
-        with open("Room{}.txt".format(n),"r") as origin, open("Room{}_Edit.txt".format(n),"w") as copy:
+        with open("Room{}.txt".format(n),"r") as origin, open("Edit_Room{}.txt".format(n),"w") as copy:
             for line in origin:
                 copy.write(line)
-    with open("Shop.txt".format(n),"r") as origin, open ("Shop_Edit.txt".format(n),"w") as copy:
+    with open("Shop.txt".format(n),"r") as origin, open ("Edit_Shop.txt".format(n),"w") as copy:
         for line in origin:
             copy.write(line)
 
 #Function that shows available weapons and allows to buy them
 def weaponShop(player,moneyL):
-    info = readShop("Shop_Edit.txt")
     choice = 0
     while choice != "quit":    
+        info = readFile("Edit_Shop.txt")
         weapons=[]
         print("------------------------------------")
         w = 1
@@ -87,9 +89,9 @@ def weaponShop(player,moneyL):
 
 #Function that shows available keys and allows to buy them    
 def keyShop(player,moneyL):
-    info = readShop("Shop_Edit.txt")
     choice = 0
     while choice != "quit":
+        info = readFile("Edit_Shop.txt")
         keys = []
         print("------------------------------------")
         k = 1
@@ -120,9 +122,9 @@ def keyShop(player,moneyL):
 
 #Function that shows available armour and allows to buy them  
 def armourShop(player,moneyL):
-    info = readShop("Shop_Edit.txt")
     choice = 0
     while choice != "quit":    
+        info = readFile("Edit_Shop.txt")
         armour=[]
         print("------------------------------------")
         w = 1
@@ -159,7 +161,7 @@ def armourShop(player,moneyL):
 def healingPads(player,healthL,moneyL):
     choice = 0
     while choice != "quit":   
-        info = readShop("Shop_Edit.txt") 
+        info = readFile("Edit_Shop.txt")
         print("------------------------------------")
         for line in info:
             if "pad" in line:
@@ -179,7 +181,7 @@ def healingPads(player,healthL,moneyL):
             cost = int(stats[2])
             hp = int(stats[1])
             if player.health == 100:
-                print("You already fully healed")
+                print("YOU ARE ALREADY FULLY HEALED")
                 return
             elif player.health < 100:
                 if player.money >= cost:
@@ -190,7 +192,7 @@ def healingPads(player,healthL,moneyL):
                         player.health += hp
                     moneyL.configure(text = "Money: $"+str(player.money))
                     healthL.configure(text = "Health: "+str(player.health))
-                    file = open("Shop_Edit.txt","w")
+                    file = open("Edit_Shop.txt","w")
                     for line in info:
                         line += "\n"
                         if "pad:" in line:
@@ -262,8 +264,8 @@ def sellItems(player,moneyL):
             print("TRY AGAIN")
         
 
-    
-def readShop(filename):
+#This function is always called when file info needs to be read
+def readFile(filename):
     file = open(filename)
     data = file.readlines()
     info=[]
@@ -275,7 +277,7 @@ def readShop(filename):
 def Shop(moneyL,healthL,Levels,player):
     for button in Levels.winfo_children():
         button.configure(state='disable')
-    info = readShop("Shop_Edit.txt")
+    info = readFile("Edit_Shop.txt")
     print(info[0]+", "+player.name)
 
     pin = 0
@@ -296,7 +298,128 @@ def Shop(moneyL,healthL,Levels,player):
     for button in Levels.winfo_children():  
         button.configure(state='normal')
     
+def checkState(player,Levels):
+    if player.points < 0:
+        for button in Levels.winfo_children():
+            button.configure(state='disable')
+        print("YOUR POINTS ARE BELOW 0!")
+        print("GAME OVER!")
+        choice = 0
+        while choice not in ['1','2']:
+            choice = input("Type 1 to Restart\nType 2 to Exit\n")
+        if int(choice) == 1:
+            window.destroy()
+            start()
+        elif int(choice) == 2:
+            sys.exit()
+    elif player.points >= 10:
+        for button in Levels.winfo_children():
+            button.configure(state='disable')
+        print("YOU'VE REACHED 10 POINTS!")
+        print("CONGRATULATIONS, YOU WON!")
+        choice = 0
+        while choice not in ['1','2']:
+            choice = input("Type 1 to Restart\nType 2 to Exit\n")
+        if int(choice) == 1:
+            window.destroy()
+            start()
+        elif int(choice) == 2:
+            sys.exit()
+        
+def GoToRoom(filename,player,Levels,moneyL,healthL,pointsL):
+    if player.health == 0:
+        print("YOU ARE NOT HEALED")
+        return
+    for button in Levels.winfo_children():
+        button.configure(state='disable')
+    room=readFile(filename)
+    print("\n"+room[0]+"\n"+room[1]+"\n")
 
+    for idx, line in enumerate(room):
+        if "# Enemy" in line:
+            enemystats = room[idx+1].split(",")
+    if enemystats:
+        print("Enemy encountered!")
+        print("Name: "+enemystats[0]+" Damage: "+enemystats[1]+" Health: "+enemystats[2])
+        action = input("Type 1 to Fight\nType 2 to Run\n")
+        if action == "1":
+            if len(player.inventory["Weapons"]) == 0:
+                print("YOU HAVE NO WEAPON TO FIGHT...\nYOU RAN AWAY\n")
+                for button in Levels.winfo_children():  
+                    button.configure(state='normal')
+                return
+            else:
+                weapon=[]
+                armour=[]
+                counterW = 0
+                print("------------------------------------")
+                print("Weapons: ")
+                for weapon in player.inventory['Weapons']:
+                    counterW += 1
+                    print(str(counterW)+".",weapon[0].capitalize()+", "+"Damage: "+str(weapon[1])+", "+"Price: $"+str(weapon[2]))
+                print("------------------------------------")
+                wc = 0
+                while wc < 1 or wc > len(player.inventory['Weapons']):
+                    wc = int(input("Choose your weapon[1-"+str(len(player.inventory['Weapons']))+"]\n"))
+                weapon = player.inventory['Weapons'][wc-1]
+
+                if len(player.inventory['Armour']) != 0:
+                    counterA = 0
+                    print("------------------------------------")
+                    print("Armour: ")
+                    for armour in player.inventory['Armour']:
+                        counterA +=1
+                        print(str(counterA)+"."+" Damage reduction: "+str(round(100-(100/int(armour[0])),2))+"%, "+"Price: $"+str(armour[1]))
+                    print("------------------------------------")
+                    ac = -1
+                    while ac < 0 or ac > len(player.inventory['Armour']):
+                        ac = int(input("Choose your armour[0 - None][1-"+str(len(player.inventory['Armour']))+"]\n"))
+                    if ac == 0:
+                        armour = [1]
+                    else:
+                        armour = player.inventory['Armour'][ac-1]
+                else:
+                    armour = [1]
+
+                enemyHP = int(enemystats[2])
+                enemyDMG = int(enemystats[1])/int(armour[0])
+
+                while enemyHP > 0 and player.health > 0:   
+                    enemyHP -= int(weapon[1])
+                    player.health -= enemyDMG
+
+                if player.health <= 0:
+                    player.health = 0
+                    healthL.configure(text = "Health: "+str(player.health))
+                    player.points -= 2
+                    checkState(player,Levels)
+                    pointsL.configure(text = "Points: "+str(player.points))
+                    player.inventory['Weapons'].remove(weapon)
+                    if armour[0] != 1:
+                        player.inventory['Armour'].remove(armour)
+                    enemystats[2] = str(enemyHP)
+                    file = open(filename,"w")
+                    for idx,line in enumerate(room):
+                        room[idx] += "\n"
+                        print(line)
+                        if "# Enemy" in line:
+                            newstats = ",".join(enemystats)
+                            room[idx+1] = newstats
+                        file.write(room[idx])
+                        room[idx] = room[idx].replace('\n','')
+                    file.close()
+                    print("YOU LOST")
+                    for button in Levels.winfo_children():  
+                        button.configure(state='normal')
+                    return
+
+
+                
+        elif action == "2":
+            print("YOU RAN\n")
+            for button in Levels.winfo_children():  
+                button.configure(state='normal')
+            return
 
 def game(player):
 
@@ -304,6 +427,7 @@ def game(player):
     readStages()
 
     #Create window
+    global window
     window = tkinter.Tk()
     window.geometry("500x150")
     window.title("Game")
@@ -324,16 +448,16 @@ def game(player):
     #Room Buttons
     Levels = tkinter.Frame(window)
     Levels.pack(anchor="n", padx=10)
-    r1_bt=tkinter.Button(Levels, text="Room 1")
+    r1_bt=tkinter.Button(Levels, text="Room 1", command = lambda: GoToRoom("Edit_Room1.txt",player,Levels,moneyL,healthL,pointsL))
     r1_bt.grid(row = 0, column = 0)
-    r2_bt=tkinter.Button(Levels, text="Room 2")
+    r2_bt=tkinter.Button(Levels, text="Room 2", command = lambda: GoToRoom("Edit_Room2.txt",player,Levels,moneyL,healthL,pointsL))
     r2_bt.grid(row = 0, column = 1)
-    r3_bt=tkinter.Button(Levels, text="Room 3")
+    r3_bt=tkinter.Button(Levels, text="Room 3", command = lambda: GoToRoom("Edit_Room3.txt",player,Levels,moneyL,healthL,pointsL))
     r3_bt.grid(row = 0, column = 2)
-    r4_bt=tkinter.Button(Levels, text="Room 4")
+    r4_bt=tkinter.Button(Levels, text="Room 4", command = lambda: GoToRoom("Edit_Room4.txt",player,Levels,moneyL,healthL,pointsL))
     r4_bt.grid(row = 0, column = 3)
     shop_bt=tkinter.Button(Levels, text="Shop", command = lambda: Shop(moneyL,healthL,Levels,player))
     shop_bt.grid(row = 0, column = 4)
-    
     window.mainloop()
+
 start()
