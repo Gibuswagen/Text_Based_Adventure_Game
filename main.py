@@ -30,14 +30,41 @@ class Player:
         print("------------------------------------")
 
 
+#clear entry if incorrect input
+def clear_entry(user_entry):
+    user_entry.delete(0, tkinter.END)
+
+#Function that assigns name for per user entry input
+def submitname(user_entry,output_label):
+    if len(user_entry.get()) != 0:
+        global nameInput
+        nameInput = user_entry.get()
+        nameWindow.destroy()
+        
+    else:
+        output_label.configure(text = "Invalid username")
+        clear_entry(user_entry)
 
 #Function that asks a user for a name input and starts the game
 def start():
-    name = input("Enter your name >> ")
-    player = Player(name,random.randint(50,310),100,0,{'Weapons':[],'Keys':[],'Armour':[]})
-    if len(name) > 0:
+    global nameWindow
+    global nameInput
+    nameWindow = tkinter.Tk()
+    nameWindow.geometry("500x150")
+    nameFrame = tkinter.Frame(nameWindow)
+    nameFrame.pack()
+    label= tkinter.Label(nameFrame,text="Enter your nickname", font=("TimesRoman, 10"))
+    label.grid(row = 0, column = 0)
+    user_entry = tkinter.Entry(nameFrame)
+    user_entry.grid(row = 1, column = 0)
+    output_label= tkinter.Label(nameFrame, font=("TimesRoman, 10"))
+    output_label.grid(row = 2, column = 0)
+    submit_bt=tkinter.Button(nameFrame, text="Submit", font=("TimesRoman, 10"), command = lambda: submitname(user_entry,output_label))
+    submit_bt.grid(row = 3, column = 0)
+    nameWindow.mainloop()   
+    player = Player(nameInput,random.randint(50,310),100,0,{'Weapons':[],'Keys':[],'Armour':[]})
+    if len(nameInput) > 0:
         game(player)
-
 
     # player = Player('Gibuswagen',10000,100,0,{'Weapons':[['knife',10,50]],'Keys':[],'Armour':[]})
     # game(player)
