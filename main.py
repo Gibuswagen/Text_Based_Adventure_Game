@@ -33,12 +33,12 @@ class Player:
 
 #Function that asks a user for a name input and starts the game
 def start():
-    name = input("Enter your name >> ")
-    player = Player(name,random.randint(50,310),100,0,{'Weapons':[],'Keys':[],'Armour':[]})
-    if len(name) > 0:
-        game(player)
-    # player = Player('Gibuswagen',10000,100,0,{'Weapons':[['knife',10,50]],'Keys':[],'Armour':[]})
-    # game(player)
+    # name = input("Enter your name >> ")
+    # player = Player(name,random.randint(50,310),100,0,{'Weapons':[],'Keys':[],'Armour':[]})
+    # if len(name) > 0:
+    #     game(player)
+    player = Player('Gibuswagen',10000,100,0,{'Weapons':[['knife',10,50]],'Keys':[],'Armour':[]})
+    game(player)
 
 
 #Function for later info use    
@@ -227,7 +227,7 @@ def sellItems(player,moneyL):
         counterA = counterK
         for armour in player.inventory['Armour']:
             counterA +=1
-            print(str(counterA)+"."+" Damage reduction: "+str(round(100-(100/int(armour[0])),2))+"%, "+"Price: $"+str(armour[1]))
+            print(str(counterA)+"."+"Armour: Damage reduction: "+str(round(100-(100/int(armour[0])),2))+"%, "+"Price: $"+str(armour[1]))
             itemlist.append(armour)
         print("------------------------------------")
         if len(itemlist) == 0:
@@ -338,7 +338,10 @@ def GoToRoom(filename,player,Levels,moneyL,healthL,pointsL):
     for idx, line in enumerate(room):
         if "# Enemy" in line:
             enemystats = room[idx+1].split(",")
-    if enemystats:
+            if int(enemystats[2]) == 0:
+                enemystats=[]
+
+    if len(enemystats) != 0:
         print("Enemy encountered!")
         print("Name: "+enemystats[0]+" Damage: "+enemystats[1]+" Health: "+enemystats[2])
         action = input("Type 1 to Fight\nType 2 to Run\n")
@@ -386,7 +389,7 @@ def GoToRoom(filename,player,Levels,moneyL,healthL,pointsL):
 
                 while enemyHP > 0 and player.health > 0:   
                     enemyHP -= int(weapon[1])
-                    player.health -= enemyDMG
+                    player.health = round(player.health - enemyDMG)
 
                 if player.health <= 0:
                     player.health = 0
@@ -401,7 +404,6 @@ def GoToRoom(filename,player,Levels,moneyL,healthL,pointsL):
                     file = open(filename,"w")
                     for idx,line in enumerate(room):
                         room[idx] += "\n"
-                        print(line)
                         if "# Enemy" in line:
                             newstats = ",".join(enemystats)
                             room[idx+1] = newstats
@@ -412,14 +414,128 @@ def GoToRoom(filename,player,Levels,moneyL,healthL,pointsL):
                     for button in Levels.winfo_children():  
                         button.configure(state='normal')
                     return
+                elif enemyHP <= 0:
+                    print("YOU DEFEATED "+enemystats[0].upper())
+                    healthL.configure(text = "Health: "+str(player.health))
+                    enemystats[2] = str(0)
+                    #Change HP of enemy to 0 in file
+                    file = open(filename,"w")
+                    for idx,line in enumerate(room):
+                        room[idx] += "\n"
+                        if "# Enemy" in line:
+                            newstats = ",".join(enemystats)
+                            room[idx+1] = newstats
+                        file.write(room[idx])
+                        room[idx] = room[idx].replace('\n','')
+                    file.close()
+                    #Receive rewards for killing an enemy
+                    for idx,line in enumerate(room):
+                        if "# Point" in line:
+                            player.points += int(room[idx+1])
+                            pointsL.configure(text = "Points: "+str(player.points))
+                            print(room[idx+1]+" POINTS RECEIVED")
+                            checkState(player,Levels)
+                        if "# Weapon" in line:
+                            weapon = room[idx+1].split(",")
+                            player.inventory['Weapons'] += [weapon]
+                            print("NEW WEAPON RECEIVED: "+"Name: "+weapon[0]+", Damage: "+weapon[1]+", Price: $"+weapon[2])
+                        if "# Money" in line:
+                            reward = int(room[idx+1])
+                            player.money += reward
+                            moneyL.configure(text = "Money: $"+str(player.money))
+                            print("$"+str(reward)+" RECEIVED")
+                        if "# HealingPad" in line:
+                            print("YOU FOUND HEALING PADS")
+                            quantity = int(room[idx+1])
+                            if player.health + (quantity * 50) > 100:
+                                player.health = 100
+                                healthL.configure(text = "Health: "+str(player.health))
+                                print("YOU ARE FULLY HEALED")
+                            else:
+                                player.health += (quantity * 50)
+                                healthL.configure(text = "Health: "+str(player.health))
+                                print("YOU HEALED 50 HEALTH")
+                        if "# Key" in line:
+                            k = room[idx+1].split(",")
+                            player.inventory['Keys'] += [k]
+                            print("YOU FOUND A KEY")
+                            print("Type: "+k[0]+", "+"Price: $"+k[1])
 
-
-                
+                        if "# Treasure" in line:
+                            chest = room[idx+1].split(",")
+                            choice = 0
+                            while choice not in ['1','2']:
+                                choice = input("You see treasure chest!\nType 1 to try to open it [Key type:"+chest[0]+"]\nType 2 to ignore\n")
+                            if choice == "1":
+                                if len(player.inventory['Keys']) == 0:
+                                    print("You don't have keys in inventory.")
+                                    break
+                                for key in player.inventory['Keys']:
+                                    if key[0] == chest[0]:
+                                        print("You used a matching key!")
+                                        player.inventory['Keys'].remove(key)
+                                        player.points += int(chest[1])
+                                        print(chest[1]+" POINTS RECEIVED")
+                                        pointsL.configure(text = "Points: "+str(player.points))
+                                        checkState(player,Levels)
+                                        file = open(filename,"w")
+                                        for line in room:
+                                            line += "\n"
+                                            if "# Treasure" in line:
+                                                line = "\n"
+                                            file.write(line)
+                                            line = line.replace('\n','')
+                                        file.close()
+                                        break
+                                    else:
+                                        print("Put key didn't work...")
+                            elif choice == "2":
+                                print("You chose to ignore the treasure chest.")
+                    for button in Levels.winfo_children():
+                        button.configure(state='normal')
+                    return
         elif action == "2":
             print("YOU RAN\n")
             for button in Levels.winfo_children():  
                 button.configure(state='normal')
             return
+        
+    elif len(enemystats) == 0:
+        print("ENEMY OF THIS REGION HAS ALREADY BEEN DEFEATED\n")
+        for idx,line in enumerate(room):
+            if "# Treasure" in line:
+                chest = room[idx+1].split(",")
+                choice = 0
+                while choice not in ['1','2']:
+                    choice = input("You see treasure chest!\nType 1 to try to open it [Key type:"+chest[0]+"]\nType 2 to ignore\n")
+                if choice == "1":
+                    if len(player.inventory['Keys']) == 0:
+                        print("You don't have keys in inventory.")
+                        break
+                    for key in player.inventory['Keys']:
+                        if key[0] == chest[0]:
+                            print("You used a matching key!")
+                            player.inventory['Keys'].remove(key)
+                            player.points += int(chest[1])
+                            print(chest[1]+" POINTS RECEIVED")
+                            pointsL.configure(text = "Points: "+str(player.points))
+                            checkState(player,Levels)
+                            file = open(filename,"w")
+                            for line in room:                
+                                line += "\n"
+                                if "# Treasure" in line:
+                                    line = "\n"
+                                file.write(line)
+                                line = line.replace('\n','')
+                            file.close()
+                            break
+                        else:
+                            print("Put key didn't work...")
+                elif choice == "2":
+                    print("You chose to ignore the treasure chest.")
+        for button in Levels.winfo_children():
+            button.configure(state='normal')
+        return
 
 def game(player):
 
