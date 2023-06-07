@@ -33,12 +33,14 @@ class Player:
 
 #Function that asks a user for a name input and starts the game
 def start():
-    # name = input("Enter your name >> ")
-    # player = Player(name,random.randint(50,310),100,0,{'Weapons':[],'Keys':[],'Armour':[]})
-    # if len(name) > 0:
-    #     game(player)
-    player = Player('Gibuswagen',10000,100,0,{'Weapons':[['knife',10,50]],'Keys':[],'Armour':[]})
-    game(player)
+    name = input("Enter your name >> ")
+    player = Player(name,random.randint(50,310),100,0,{'Weapons':[],'Keys':[],'Armour':[]})
+    if len(name) > 0:
+        game(player)
+
+
+    # player = Player('Gibuswagen',10000,100,0,{'Weapons':[['knife',10,50]],'Keys':[],'Armour':[]})
+    # game(player)
 
 
 #Function for later info use    
@@ -241,7 +243,7 @@ def sellItems(player,moneyL):
             weapons = player.inventory['Weapons']
             weapons.remove(purchase)
             player.inventory['Weapons']=weapons
-            player.money += purchase[-1]
+            player.money += int(purchase[-1])
             print("WEAPON SOLD SUCCESSFULLY")
             moneyL.configure(text = "Money: $"+str(player.money))
         elif int(choice) > counterW and int(choice) <= counterK:
@@ -249,7 +251,7 @@ def sellItems(player,moneyL):
             keys = player.inventory['Keys']
             keys.remove(purchase)
             player.inventory['Keys']=keys
-            player.money += purchase[-1]
+            player.money += int(purchase[-1])
             print("KEY SOLD SUCCESSFULLY")
             moneyL.configure(text = "Money: $"+str(player.money))
         elif int(choice) > counterK and int(choice) <= counterA:
@@ -257,7 +259,7 @@ def sellItems(player,moneyL):
             armour = player.inventory['Armour']
             armour.remove(purchase)
             player.inventory['Armour']=armour
-            player.money += purchase[-1]
+            player.money += int(purchase[-1])
             print("ARMOUR SOLD SUCCESSFULLY")
             moneyL.configure(text = "Money: $"+str(player.money))
         else:
@@ -297,7 +299,10 @@ def Shop(moneyL,healthL,Levels,player):
     print("YOU LEFT THE SHOP")
     for button in Levels.winfo_children():  
         button.configure(state='normal')
-    
+
+def restartButton():
+    window.destroy()
+    start()
 def checkState(player,Levels):
     if player.points < 0:
         for button in Levels.winfo_children():
@@ -550,7 +555,7 @@ def game(player):
 
     #Player Info 
     Player_stat = tkinter.Frame(window)
-    Player_stat.pack(anchor = "n", padx = 10)
+    Player_stat.pack(anchor = "n", padx = 10, pady=10)
     nameL = tkinter.Label(Player_stat, text = ("Name:",player.name), font=("TimesRoman, 10"))
     nameL.grid(row = 0, column= 0)
     moneyL = tkinter.Label(Player_stat, text = ("Money: $"+str(player.money)), font=("TimesRoman, 10"))
@@ -563,7 +568,7 @@ def game(player):
     inv_bt.pack(anchor="n")    
     #Room Buttons
     Levels = tkinter.Frame(window)
-    Levels.pack(anchor="n", padx=10)
+    Levels.pack(anchor="n", padx=10,pady=10)
     r1_bt=tkinter.Button(Levels, text="Room 1", command = lambda: GoToRoom("Edit_Room1.txt",player,Levels,moneyL,healthL,pointsL))
     r1_bt.grid(row = 0, column = 0)
     r2_bt=tkinter.Button(Levels, text="Room 2", command = lambda: GoToRoom("Edit_Room2.txt",player,Levels,moneyL,healthL,pointsL))
@@ -574,6 +579,10 @@ def game(player):
     r4_bt.grid(row = 0, column = 3)
     shop_bt=tkinter.Button(Levels, text="Shop", command = lambda: Shop(moneyL,healthL,Levels,player))
     shop_bt.grid(row = 0, column = 4)
+
+    #Restart Button
+    restart_bt = tkinter.Button(window, text = "Restart", command = restartButton)
+    restart_bt.pack(anchor="n") 
     window.mainloop()
 
 start()
