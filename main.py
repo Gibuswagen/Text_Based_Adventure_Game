@@ -47,9 +47,11 @@ def submitname(user_entry,output_label):
 
 #Function that asks a user for a name input and starts the game
 def start():
+    #Create name input window
     global nameWindow
     global nameInput
     nameWindow = tkinter.Tk()
+    nameWindow.title("Game")
     nameWindow.geometry("500x150")
     nameFrame = tkinter.Frame(nameWindow)
     nameFrame.pack()
@@ -61,10 +63,10 @@ def start():
     output_label.grid(row = 2, column = 0)
     submit_bt=tkinter.Button(nameFrame, text="Submit", font=("TimesRoman, 10"), command = lambda: submitname(user_entry,output_label))
     submit_bt.grid(row = 3, column = 0)
-    nameWindow.mainloop()   
+    nameWindow.mainloop()
+    #Start the game
     player = Player(nameInput,random.randint(50,310),100,0,{'Weapons':[],'Keys':[],'Armour':[]})
-    if len(nameInput) > 0:
-        game(player)
+    game(player)
 
     # player = Player('Gibuswagen',10000,100,0,{'Weapons':[['knife',10,50]],'Keys':[],'Armour':[]})
     # game(player)
@@ -97,7 +99,6 @@ def weaponShop(player,moneyL):
         weapons.sort(key= lambda x: int(x[-1]))
         for c in range(len(weapons)):
             print(str(c+1)+".",weapons[c][0].capitalize()+", "+"Damage: "+weapons[c][1]+", "+"Price: $"+weapons[c][2])
-
         print("------------------------------------")
         choice=(input("Which weapon would you like to buy?[1-"+str(len(weapons))+"]\nType 'quit' to go back\n"))
         if choice == "quit":
@@ -188,6 +189,7 @@ def armourShop(player,moneyL):
 
 #Function to buy healing pads
 def healingPads(player,healthL,moneyL):
+    #Count stock of pads; heal on purchase accordingly
     choice = 0
     while choice != "quit":   
         info = readFile("Edit_Shop.txt")
@@ -243,6 +245,7 @@ def sellItems(player,moneyL):
         counterK=0
         counterA=0
         itemlist = []
+        #Output inventory for sell
         print("------------------------------------")
         for weapon in player.inventory['Weapons']:
             counterW += 1
@@ -262,6 +265,7 @@ def sellItems(player,moneyL):
         if len(itemlist) == 0:
             print("YOU HAVE NO ITEMS TO SELL")
             break
+        #User input and item sell accordingly
         choice = input("Which item would you like to sell?[1-"+str(counterA)+"]\nType 'quit' to go back\n")
         if choice == "quit":
             break
@@ -327,10 +331,14 @@ def Shop(moneyL,healthL,Levels,player):
     for button in Levels.winfo_children():  
         button.configure(state='normal')
 
+#Game restart function
 def restartButton():
     window.destroy()
     start()
+
+#Function that checks win/lose state
 def checkState(player,Levels):
+    #Player lost
     if player.points < 0:
         for button in Levels.winfo_children():
             button.configure(state='disable')
@@ -344,6 +352,7 @@ def checkState(player,Levels):
             start()
         elif int(choice) == 2:
             sys.exit()
+    #Player won
     elif player.points >= 10:
         for button in Levels.winfo_children():
             button.configure(state='disable')
@@ -358,7 +367,9 @@ def checkState(player,Levels):
         elif int(choice) == 2:
             sys.exit()
         
+#Function that reads the rooms info and output according steps
 def GoToRoom(filename,player,Levels,moneyL,healthL,pointsL):
+    #Check if player has health
     if player.health == 0:
         print("YOU ARE NOT HEALED")
         return
@@ -367,17 +378,20 @@ def GoToRoom(filename,player,Levels,moneyL,healthL,pointsL):
     room=readFile(filename)
     print("\n"+room[0]+"\n"+room[1]+"\n")
 
+    #Check if enemy is active
     for idx, line in enumerate(room):
         if "# Enemy" in line:
             enemystats = room[idx+1].split(",")
             if int(enemystats[2]) == 0:
                 enemystats=[]
 
+    #If enemy is active -> Fight or Run
     if len(enemystats) != 0:
         print("Enemy encountered!")
         print("Name: "+enemystats[0]+" Damage: "+enemystats[1]+" Health: "+enemystats[2])
         action = input("Type 1 to Fight\nType 2 to Run\n")
         if action == "1":
+            #If chosen '1' -> Check weapons, armour; fight an enemy; win or lose accordingly
             if len(player.inventory["Weapons"]) == 0:
                 print("YOU HAVE NO WEAPON TO FIGHT...\nYOU RAN AWAY\n")
                 for button in Levels.winfo_children():  
@@ -416,13 +430,13 @@ def GoToRoom(filename,player,Levels,moneyL,healthL,pointsL):
                 else:
                     armour = [1]
 
+                #Fight loop
                 enemyHP = int(enemystats[2])
                 enemyDMG = int(enemystats[1])/int(armour[0])
-
                 while enemyHP > 0 and player.health > 0:   
                     enemyHP -= int(weapon[1])
                     player.health = round(player.health - enemyDMG)
-
+                #If player loses
                 if player.health <= 0:
                     player.health = 0
                     healthL.configure(text = "Health: "+str(player.health))
@@ -446,6 +460,7 @@ def GoToRoom(filename,player,Levels,moneyL,healthL,pointsL):
                     for button in Levels.winfo_children():  
                         button.configure(state='normal')
                     return
+                #If player wins
                 elif enemyHP <= 0:
                     print("YOU DEFEATED "+enemystats[0].upper())
                     healthL.configure(text = "Health: "+str(player.health))
@@ -492,7 +507,7 @@ def GoToRoom(filename,player,Levels,moneyL,healthL,pointsL):
                             player.inventory['Keys'] += [k]
                             print("YOU FOUND A KEY")
                             print("Type: "+k[0]+", "+"Price: $"+k[1])
-
+                        #Check for treasure -> ask user to open or ignore
                         if "# Treasure" in line:
                             chest = room[idx+1].split(",")
                             choice = 0
@@ -526,12 +541,13 @@ def GoToRoom(filename,player,Levels,moneyL,healthL,pointsL):
                     for button in Levels.winfo_children():
                         button.configure(state='normal')
                     return
+        #Leave the room if '2'
         elif action == "2":
             print("YOU RAN\n")
             for button in Levels.winfo_children():  
                 button.configure(state='normal')
             return
-        
+    #If enemy is not active, check for treasure
     elif len(enemystats) == 0:
         print("ENEMY OF THIS REGION HAS ALREADY BEEN DEFEATED\n")
         for idx,line in enumerate(room):
@@ -592,7 +608,8 @@ def game(player):
     pointsL = tkinter.Label(Player_stat, text = ("Points:",player.points), font=("TimesRoman, 10"))
     pointsL.grid(row = 0, column= 3)
     inv_bt = tkinter.Button(window, text="Inventory", command = player.showInventory)
-    inv_bt.pack(anchor="n")    
+    inv_bt.pack(anchor="n") 
+
     #Room Buttons
     Levels = tkinter.Frame(window)
     Levels.pack(anchor="n", padx=10,pady=10)
