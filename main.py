@@ -45,6 +45,8 @@ def submitname(user_entry,output_label):
         output_label.configure(text = "Invalid username")
         clear_entry(user_entry)
 
+def exitGame():
+    sys.exit()
 #Function that asks a user for a name input and starts the game
 def start():
     #Create name input window
@@ -52,7 +54,7 @@ def start():
     global nameInput
     nameWindow = tkinter.Tk()
     nameWindow.title("Game")
-    nameWindow.geometry("500x150")
+    nameWindow.geometry("500x200")
     nameFrame = tkinter.Frame(nameWindow)
     nameFrame.pack()
     label= tkinter.Label(nameFrame,text="Enter your nickname", font=("TimesRoman, 10"))
@@ -63,6 +65,8 @@ def start():
     output_label.grid(row = 2, column = 0)
     submit_bt=tkinter.Button(nameFrame, text="Submit", font=("TimesRoman, 10"), command = lambda: submitname(user_entry,output_label))
     submit_bt.grid(row = 3, column = 0)
+    exit_bt=tkinter.Button(nameFrame, text="Exit", font=("TimesRoman, 10"), command = exitGame)
+    exit_bt.grid(row = 4, column = 0)
     nameWindow.mainloop()
     #Start the game
     player = Player(nameInput,random.randint(50,310),100,0,{'Weapons':[],'Keys':[],'Armour':[]})
@@ -259,7 +263,7 @@ def sellItems(player,moneyL):
         counterA = counterK
         for armour in player.inventory['Armour']:
             counterA +=1
-            print(str(counterA)+"."+"Armour: Damage reduction: "+str(round(100-(100/int(armour[0])),2))+"%, "+"Price: $"+str(armour[1]))
+            print(str(counterA)+"."+" Armour: Damage reduction: "+str(round(100-(100/int(armour[0])),2))+"%, "+"Price: $"+str(armour[1]))
             itemlist.append(armour)
         print("------------------------------------")
         if len(itemlist) == 0:
@@ -593,7 +597,7 @@ def game(player):
     #Create window
     global window
     window = tkinter.Tk()
-    window.geometry("500x150")
+    window.geometry("500x200")
     window.title("Game")
 
     #Player Info 
@@ -625,8 +629,10 @@ def game(player):
     shop_bt.grid(row = 0, column = 4)
 
     #Restart Button
-    restart_bt = tkinter.Button(window, text = "Restart", command = restartButton)
-    restart_bt.pack(anchor="n") 
+    restart_bt = tkinter.Button(window, text = "Restart", font=("TimesRoman, 10"), command = restartButton)
+    restart_bt.pack(anchor = "n") 
+    exit_bt=tkinter.Button(window, text="Exit", font=("TimesRoman, 10"), command = exitGame)
+    exit_bt.pack(anchor ="n")
     window.mainloop()
 
 start()
