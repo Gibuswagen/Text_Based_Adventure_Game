@@ -30,7 +30,7 @@ class Player:
         print("------------------------------------")
 
 
-#clear entry if incorrect input
+#Clear entry if input is incorrect
 def clear_entry(user_entry):
     user_entry.delete(0, tkinter.END)
 
@@ -40,13 +40,14 @@ def submitname(user_entry,output_label):
         global nameInput
         nameInput = user_entry.get()
         nameWindow.destroy()
-        
     else:
         output_label.configure(text = "Invalid username")
         clear_entry(user_entry)
 
+#Exit function
 def exitGame():
     sys.exit()
+
 #Function that asks a user for a name input and starts the game
 def start():
     #Create name input window
@@ -71,10 +72,6 @@ def start():
     #Start the game
     player = Player(nameInput,random.randint(50,310),100,0,{'Weapons':[],'Keys':[],'Armour':[]})
     game(player)
-
-    # player = Player('Gibuswagen',10000,100,0,{'Weapons':[['knife',10,50]],'Keys':[],'Armour':[]})
-    # game(player)
-
 
 #Function for later info use    
 def readStages():
@@ -590,7 +587,6 @@ def GoToRoom(filename,player,Levels,moneyL,healthL,pointsL):
         return
 
 def game(player):
-
     #Read and copy stage infos
     readStages()
 
@@ -634,5 +630,4 @@ def game(player):
     exit_bt=tkinter.Button(window, text="Exit", font=("TimesRoman, 10"), command = exitGame)
     exit_bt.pack(anchor ="n")
     window.mainloop()
-
 start()
