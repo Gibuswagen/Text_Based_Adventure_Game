@@ -388,7 +388,7 @@ def GoToRoom(filename,player,Levels,moneyL,healthL,pointsL):
 
     #If enemy is active -> Fight or Run
     if len(enemystats) != 0:
-        print("Enemy encountered!")
+        print("Enemy encountered!\n")
         print("Name: "+enemystats[0]+" Damage: "+enemystats[1]+" Health: "+enemystats[2])
         action = input("Type 1 to Fight\nType 2 to Run\n")
         if action == "1":
@@ -458,6 +458,8 @@ def GoToRoom(filename,player,Levels,moneyL,healthL,pointsL):
                         room[idx] = room[idx].replace('\n','')
                     file.close()
                     print("YOU LOST")
+                    print("YOUR ITEMS HAS BEEN TAKEN")
+                    print("YOU HEALTH IS AT CRITICAL LEVEL, FIND HEALING")
                     for button in Levels.winfo_children():  
                         button.configure(state='normal')
                     return
@@ -541,6 +543,7 @@ def GoToRoom(filename,player,Levels,moneyL,healthL,pointsL):
                                 print("You chose to ignore the treasure chest.")
                     for button in Levels.winfo_children():
                         button.configure(state='normal')
+                    print("YOU LEFT THE REGION")
                     return
         #Leave the room if '2'
         elif action == "2":
@@ -584,6 +587,7 @@ def GoToRoom(filename,player,Levels,moneyL,healthL,pointsL):
                     print("You chose to ignore the treasure chest.")
         for button in Levels.winfo_children():
             button.configure(state='normal')
+        print("YOU LEFT THE REGION")
         return
 
 def game(player):
