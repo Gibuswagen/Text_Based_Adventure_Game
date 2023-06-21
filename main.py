@@ -468,6 +468,9 @@ def GoToRoom(filename,player,Levels,moneyL,healthL,pointsL):
                     print("YOU DEFEATED "+enemystats[0].upper())
                     healthL.configure(text = "Health: "+str(player.health))
                     enemystats[2] = str(0)
+                    player.inventory['Weapons'].remove(weapon)
+                    if armour[0] != 1:
+                        player.inventory['Armour'].remove(armour)
                     #Change HP of enemy to 0 in file
                     file = open(filename,"w")
                     for idx,line in enumerate(room):
